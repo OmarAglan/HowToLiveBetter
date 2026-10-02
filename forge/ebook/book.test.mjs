@@ -153,6 +153,10 @@ test('renderEpubHtmlToken keeps entry dl and drops comments', () => {
   assert.equal(renderEpubHtmlToken('<!-- 成本标签: 钱=0 -->'), '');
   assert.equal(renderEpubHtmlToken('<script>alert(1)</script>'), '');
   assert.equal(renderEpubHtmlToken('<p class="x">x</p>'), '');
+  assert.equal(renderEpubHtmlToken('<a id="bab-01">'), '<a id="bab-01">');
+  assert.equal(renderEpubHtmlToken('</a>'), '</a>');
+  assert.equal(renderEpubHtmlToken('<a id="bab-01"/>'), '<a id="bab-01"/>');
+  assert.equal(renderEpubHtmlToken('<a href="x">'), '');
 });
 
 test('pdf and epub keep field gaps above body leading', () => {
@@ -196,7 +200,7 @@ test('es reuses English README markers', () => {
 });
 
 test('each locale TOC has 34 chapters and long reads', () => {
-  for (const code of ['en', 'ru', 'zh', 'es', 'pt', 'ar']) {
+  for (const code of ['en', 'ru', 'zh', 'es', 'pt', 'ar', 'id']) {
     const book = readBook(code);
     assert.equal(book.bookFiles.length, EXPECTED_CHAPTERS, code);
     assert.ok(book.docFiles.length > 0, code);

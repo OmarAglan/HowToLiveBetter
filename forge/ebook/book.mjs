@@ -120,6 +120,24 @@ const LOCALE = {
       body: 'النص',
     },
   },
+  id: {
+    markers: {
+      front: '## Pengantar',
+      toc: '## Daftar isi',
+      book: '## Bacaan panjang',
+    },
+    title: 'HowToLiveBetter',
+    typstLang: 'id',
+    typstRegion: 'ID',
+    labels: {
+      front: 'Pengantar',
+      contents: 'Daftar isi',
+      about: 'Tentang edisi ini',
+      toc: 'Isi',
+      cover: 'Sampul',
+      body: 'Teks',
+    },
+  },
 };
 
 export const read = (rel) => readFileSync(resolveRepoFile(rel), 'utf8').replace(/\r\n/g, '\n');
@@ -142,6 +160,7 @@ export const EBOOK_IDS = {
   es: 'urn:uuid:6f0e2a10-7b21-4c3a-9d11-000000000004',
   pt: 'urn:uuid:6f0e2a10-7b21-4c3a-9d11-000000000005',
   ar: 'urn:uuid:6f0e2a10-7b21-4c3a-9d11-000000000006',
+  id: 'urn:uuid:6f0e2a10-7b21-4c3a-9d11-000000000007',
 };
 
 export function loadLangs() {
@@ -167,7 +186,7 @@ export function localeFor(code) {
 
 export function parseLang(argv = process.argv.slice(2)) {
   const i = argv.indexOf('--lang');
-  if (i < 0 || !argv[i + 1]) throw new Error('usage: --lang en|ru|zh|es|pt|ar');
+  if (i < 0 || !argv[i + 1]) throw new Error('usage: --lang en|ru|zh|es|pt|ar|id');
   return argv[i + 1];
 }
 
@@ -210,7 +229,7 @@ function fenceMark(line) {
 // Locale source_label values from translate/rules/*.json — ebook drops these
 // full citation bullets; Evidence grade and Notes stay.
 const SOURCE_LINE =
-  /^- (?:来源|Sources|Источники|Fuentes|Fontes|المصادر)\s*[：:].*$/;
+  /^- (?:来源|Sources|Источники|Fuentes|Fontes|المصادر|Sumber)\s*[：:].*$/;
 
 export function stripSourceLines(md) {
   const lines = md.split('\n');
@@ -261,6 +280,11 @@ const FIELD_LABELS = [
   'الفائدة',
   'مستوى الدليل',
   'ملاحظات',
+  'Biaya',
+  'Singkatnya',
+  'Manfaat',
+  'Tingkat bukti',
+  'Catatan',
 ].sort((a, b) => b.length - a.length);
 
 const FIELD_LINE = new RegExp(
@@ -533,6 +557,11 @@ export function renderEpubHtmlToken(text) {
   if (!t) return '';
   if (t.startsWith('<!--')) return '';
   if (/^<dl\b[^>]*\bclass=(["'])entry\1/i.test(t)) return text;
+  // Locale research notes use bare fragment anchors (e.g. <a id="bab-01"></a>).
+  // marked emits the open and close tags as separate html tokens — keep both
+  // (and a self-closing form) so Panduan#bab-NN links pass epubcheck.
+  if (/^<a\b[^>]*\bid=(["'])[A-Za-z][\w:-]*\1[^>]*\/?>$/i.test(t)) return t;
+  if (/^<\/a>$/i.test(t)) return t;
   return '';
 }
 
